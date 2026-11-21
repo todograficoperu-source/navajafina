@@ -221,7 +221,7 @@ window.onerror = function (msg, src, line, col) {
     <p>Ingresa tu PIN para continuar</p>
     <input id="pin" class="pin-input" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••">
     <button class="btn acc block" style="margin-top:14px" onclick="login()">Entrar</button>
- <p style="color:#5f584f;font-size:11px;margin-top:22px">v1.5 · <span id="canal"></span></p>
+ <p style="color:#5f584f;font-size:11px;margin-top:22px">v1.6 · <span id="canal"></span></p>
     <p id="loginErr" style="color:#ff9b8f;font-weight:700;font-size:14px;margin-top:14px;line-height:1.45"></p>
   </div>
 </section>
@@ -288,7 +288,15 @@ function call(fn, ...args) {
     // Canal principal: fetch sin cookies (funciona en incógnito, Brave, Safari, varias cuentas)
     return fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'panel', fn: fn, pin: S.pin, args: args }) })
       .then((r) => r.json())
-      .then((j) => { if (!j.ok) throw new Error(j.error || 'Error'); return j.result; });
+      .then((j) => {
+        if (!j.ok) {
+          // Si el PIN ya no sirve (lo cambiaron en otra ventana), volvemos al inicio y NO seguimos
+          // reintentando: cada intento fallido cuenta para el bloqueo de 15 minutos.
+          if (fn !== 'panelLogin' && /PIN incorrecto|Panel bloqueado/.test(j.error || '')) sesionInvalida(j.error);
+          throw new Error(j.error || 'Error');
+        }
+        return j.result;
+      });
   }
   return new Promise((res, rej) => {
     if (!window.google || !google.script || !google.script.run) return rej(new Error('NO_GAS'));
@@ -307,6 +315,16 @@ function store(k, v) { try { v === null ? sessionStorage.removeItem(k) : session
 function load(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
 function opts(list, sel, extra) {
   return (extra || '') + list.map((x) => `<option value="${esc(x.id)}" ${String(x.id) === String(sel) ? 'selected' : ''}>${esc(x.nombre)}${x.precio != null ? ' · ' + soles(x.precio) : ''}</option>`).join('');
+}
+
+function sesionInvalida(msg) {
+  clearInterval(S.timer); S.timer = null;
+  S.pin = null; S.adminPin = null; store('pin', null);
+  closeModal && document.querySelector('.modal-bg') && closeModal();
+  _$('app').classList.add('hidden'); _$('login').classList.remove('hidden');
+  _$('pin').value = '';
+  _$('loginErr').innerHTML = /bloqueado/.test(msg || '') ? esc(msg)
+    : 'El PIN cambió (quizá en otra ventana o celular). Ingresa el PIN nuevo.';
 }
 
 /* ---------- login ---------- */
