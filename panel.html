@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f1ec; --card:#ffffff; --ink:#1c1a17; --muted:#77716a; --line:#e6e0d7;
+    --dark:#1c1a17; --acc:#b8893b; --acc-soft:#f6ecd9;
+    --ok:#2f7d4f; --ok-soft:#e3f2e8; --warn:#b26a00; --warn-soft:#fff1dc;
+    --bad:#b33a3a; --bad-soft:#fbe6e6; --blue:#2b5fa8; --blue-soft:#e4edf9;
+    --wa:#1fa855; --r:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif;font-size:15px;-webkit-tap-highlight-color:transparent}
+  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  input,select,textarea{font:inherit;color:inherit}
+  .hidden{display:none!important}
+
+  /* Login */
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--dark)}
+  .login-box{width:100%;max-width:340px;text-align:center;color:#f3ece0}
+  .logo-mark{width:64px;height:64px;border-radius:18px;background:var(--acc);color:var(--dark);display:grid;place-items:center;font-size:30px;margin:0 auto 18px}
+  .login-box h1{font-size:22px;margin-bottom:6px}
+  .login-box p{color:#a9a197;margin-bottom:22px;font-size:14px}
+  .pin-input{width:100%;text-align:center;font-size:28px;letter-spacing:14px;padding:14px;border-radius:var(--r);border:1px solid #3a3631;background:#26231f;color:#fff;outline:none}
+  .pin-input:focus{border-color:var(--acc)}
+
+  /* Layout */
+  header{position:sticky;top:0;z-index:20;background:var(--dark);color:#f3ece0;padding:14px 16px 12px}
+  .hrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .brand{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px}
+  .brand .dot{width:26px;height:26px;border-radius:8px;background:var(--acc);color:var(--dark);display:grid;place-items:center;font-size:14px}
+  .date-nav{display:flex;align-items:center;gap:4px;margin-top:10px}
+  .date-nav button{width:34px;height:34px;border-radius:10px;background:#2b2824;color:#f3ece0;font-size:18px}
+  .date-nav .lbl{flex:1;text-align:center;font-weight:700;font-size:14px}
+  .date-nav .today-btn{width:auto;padding:0 10px;font-size:12px;font-weight:700}
+  .icon-btn{width:36px;height:36px;border-radius:10px;background:#2b2824;color:#f3ece0;display:grid;place-items:center;font-size:16px}
+  main{padding:14px 14px 110px;max-width:760px;margin:0 auto}
+  nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;background:#fff;border-top:1px solid var(--line);display:flex;padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+  nav.tabs button{flex:1;padding:8px 4px;border-radius:10px;font-size:11px;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;position:relative}
+  nav.tabs button .ic{font-size:20px;line-height:1}
+  nav.tabs button.on{color:var(--ink);background:var(--acc-soft)}
+  .badge-n{position:absolute;top:2px;right:calc(50% - 22px);background:var(--bad);color:#fff;border-radius:99px;font-size:10px;min-width:17px;height:17px;display:grid;place-items:center;padding:0 4px}
+  .fab{position:fixed;right:18px;bottom:84px;z-index:31;width:58px;height:58px;border-radius:18px;background:var(--acc);color:var(--dark);font-size:30px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+  .stat{background:var(--card);border-radius:var(--r);padding:10px 8px;text-align:center;border:1px solid var(--line)}
+  .stat b{display:block;font-size:20px;font-weight:800}
+  .stat span{font-size:11px;color:var(--muted);font-weight:600}
+
+  h2.sec{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:18px 2px 8px;display:flex;justify-content:space-between;align-items:center}
+  h2.sec small{font-weight:600;text-transform:none;letter-spacing:0}
+  .empty{background:var(--card);border:1px dashed var(--line);border-radius:var(--r);padding:16px;text-align:center;color:var(--muted);font-size:14px}
+
+  /* Cards */
+  .card{background:var(--card);border-radius:var(--r);padding:12px 12px 12px 14px;margin-bottom:8px;border:1px solid var(--line);position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--line)}
+  .card.s-RESERVADA::before{background:var(--blue)}
+  .card.s-CONFIRMADA::before{background:var(--blue)}
+  .card.s-EN_ESPERA::before{background:var(--warn)}
+  .card.s-ATENDIENDO::before{background:var(--acc)}
+  .card.s-TERMINADA::before{background:var(--ok)}
+  .card.s-CANCELADA,.card.s-NO_ASISTIO{opacity:.6}
+  .crow{display:flex;gap:12px;align-items:flex-start}
+  .time{font-weight:800;font-size:17px;min-width:52px}
+  .time small{display:block;font-size:11px;color:var(--muted);font-weight:600}
+  .cinfo{flex:1;min-width:0}
+  .cname{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cmeta{color:var(--muted);font-size:13px;margin-top:2px}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:#f0ece6;color:#5f5952}
+  .tag.web{background:var(--blue-soft);color:var(--blue)}
+  .tag.local{background:var(--warn-soft);color:var(--warn)}
+  .tag.tel{background:#efe7f8;color:#6b3fa0}
+  .tag.ok{background:var(--ok-soft);color:var(--ok)}
+  .tag.gold{background:var(--acc-soft);color:#8a6420}
+  .actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .btn{padding:9px 14px;border-radius:11px;font-weight:700;font-size:14px;background:#f0ece6;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+  .btn.pri{background:var(--dark);color:#fff}
+  .btn.acc{background:var(--acc);color:var(--dark)}
+  .btn.ok{background:var(--ok);color:#fff}
+  .btn.ghost{background:transparent;color:var(--muted)}
+  .btn.wa{background:var(--wa);color:#fff;text-decoration:none}
+  .btn.sm{padding:7px 11px;font-size:13px}
+  .btn.block{width:100%;padding:14px;font-size:16px}
+  .btn:disabled{opacity:.5}
+  .sel-inline{padding:8px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:14px}
+
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(20,18,15,.55);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+  .modal{background:var(--bg);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:18px 16px 24px;animation:up .2s ease}
+  @keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+  @media(min-width:700px){.modal-bg{align-items:center}.modal{border-radius:22px}}
+  .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .mhead h3{font-size:19px}
+  .seg{display:flex;background:#e9e3da;border-radius:12px;padding:4px;margin-bottom:14px}
+  .seg button{flex:1;padding:9px;border-radius:9px;font-weight:700;font-size:14px;color:var(--muted)}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  label.f{display:block;margin-bottom:12px}
+  label.f span{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+  .inp{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:16px;outline:none}
+  .inp:focus{border-color:var(--acc)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{padding:9px 12px;border-radius:11px;background:#fff;border:1px solid var(--line);font-weight:700;font-size:14px}
+  .chip.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+  .total-box{background:var(--dark);color:#fff;border-radius:var(--r);padding:14px;display:flex;justify-content:space-between;align-items:center;margin:6px 0 14px}
+  .total-box b{font-size:26px}
+  .fid{background:var(--acc-soft);border-radius:var(--r);padding:12px;margin-bottom:14px}
+  .fid.gift{background:linear-gradient(135deg,#f3dca8,#e7c27a);}
+  .fid .t{font-weight:800;font-size:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+  .dots{display:flex;gap:4px;flex-wrap:wrap}
+  .dots i{width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #d9c39a;display:block}
+  .dots i.f{background:var(--acc);border-color:var(--acc)}
+  .switch{display:flex;align-items:center;gap:10px;margin-top:10px;font-weight:700}
+  .switch input{width:22px;height:22px;accent-color:var(--dark)}
+
+  /* Caja */
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+  .kpi span{font-size:12px;color:var(--muted);font-weight:700}
+  .kpi b{display:block;font-size:24px;font-weight:800;margin-top:2px}
+  .kpi.dark{background:var(--dark);color:#fff;border-color:var(--dark)}
+  .kpi.dark span{color:#bdb4a8}
+  .brow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .brow .big{font-size:20px;font-weight:800;text-align:right}
+  .brow .big small{display:block;font-size:11px;color:var(--muted);font-weight:700}
+  .bar{height:8px;background:#efe9e0;border-radius:99px;overflow:hidden;margin-top:8px}
+  .bar i{display:block;height:100%;background:var(--acc);border-radius:99px}
+
+  .search{position:sticky;top:0}
+  .vtog{display:flex;background:#e9e3da;border-radius:12px;padding:4px;margin:0 0 4px}
+  .vtog button{flex:1;padding:8px;border-radius:9px;font-weight:700;font-size:13px;color:var(--muted)}
+  .vtog button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .chip.busy{background:repeating-linear-gradient(-45deg,#efe9e0 0 4px,#fff 4px 9px);color:#b0a89d;text-decoration:line-through;cursor:not-allowed}
+  /* Calendario del día */
+  .tl-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-top:10px;-webkit-overflow-scrolling:touch}
+  .tl{display:grid;position:relative;min-width:100%}
+  .tl .th{position:sticky;top:0;z-index:3;background:var(--dark);color:#f3ece0;font-weight:800;font-size:13px;padding:10px 6px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tl .th.corner{background:var(--dark)}
+  .tl .hh{font-size:12px;font-weight:700;color:var(--muted);padding:4px 8px 0 0;text-align:right;border-top:1px solid var(--line)}
+  .tl .hh.half{color:transparent}
+  .tl .cell{border-top:1px solid var(--line);border-left:1px solid var(--line);position:relative}
+  .tl .cell.half{border-top:1px dashed #efe9e0}
+  .tl .cell.free{cursor:pointer}
+  .tl .cell.free:hover::after,.tl .cell.free:active::after{content:"+ agendar";position:absolute;inset:3px;border-radius:8px;background:var(--acc-soft);color:#8a6420;font-size:11px;font-weight:800;display:grid;place-items:center}
+  .tl .cell.out,.tl .hh.out{background:#ece6dd}
+  .tl .gap{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em;background:repeating-linear-gradient(-45deg,#f3eee6 0 6px,#ebe4da 6px 12px);border-top:1px solid var(--line)}
+  .tl .hh.out.half{color:transparent}
+  .tl .cell.past{background:repeating-linear-gradient(-45deg,#faf8f5 0 4px,#f3efe9 4px 8px)}
+  .tl .ev{z-index:2;margin:3px 4px;border-radius:9px;padding:5px 8px;font-size:12px;line-height:1.3;display:flex;flex-direction:column;justify-content:center;min-height:0;overflow:hidden;cursor:pointer;border-left:4px solid;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  .tl .ev b small{font-weight:600;opacity:.75;font-size:11px}
+  .tl .ev b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tl .ev span{color:inherit;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .ev.s-RESERVADA,.ev.s-CONFIRMADA{background:var(--blue-soft);color:#1d3f70;border-color:var(--blue)}
+  .ev.s-EN_ESPERA{background:var(--warn-soft);color:#7a4900;border-color:var(--warn)}
+  .ev.s-ATENDIENDO{background:var(--acc-soft);color:#6b4c15;border-color:var(--acc)}
+  .ev.s-TERMINADA{background:var(--ok-soft);color:#215a39;border-color:var(--ok)}
+  .tl .now{position:absolute;left:0;right:0;height:2px;background:var(--bad);z-index:1;pointer-events:none}
+  .tl .now::before{content:"";position:absolute;left:44px;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--bad)}
+  .tl-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);font-weight:600;margin:10px 2px 0}
+  .tl-legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+  .toast{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:var(--dark);color:#fff;padding:12px 18px;border-radius:14px;font-weight:700;z-index:80;max-width:90vw;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:up .2s}
+  .toast.err{background:var(--bad)}
+  .loading{position:fixed;inset:0;z-index:90;background:rgba(120,110,100,.35);display:grid;place-items:center}
+  .spin{width:38px;height:38px;border-radius:50%;border:4px solid #e0d6c6;border-top-color:var(--acc);animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .codebox{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border:1px dashed #d9c39a;border-radius:12px;padding:10px 12px;margin:-6px 0 14px}
+  .codebox span{font-size:12px;color:var(--muted);font-weight:600}
+  .codebox b{font-size:20px;letter-spacing:4px}
+  .ajtabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin:0 -14px 12px;padding-left:14px;padding-right:14px;scrollbar-width:none}
+  .ajtabs::-webkit-scrollbar{display:none}
+  .ajtabs .chip{white-space:nowrap}
+  .ajbox{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px}
+  .ajbox h4{font-size:15px;margin-bottom:4px}
+  .ajbox > p{font-size:13px;color:var(--muted);margin-bottom:14px}
+  textarea.inp{min-height:96px;resize:vertical;line-height:1.45;font-size:15px}
+  .tog{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+  .tog:first-of-type{border-top:0}
+  .tog b{display:block;font-size:15px}
+  .tog span{font-size:12px;color:var(--muted)}
+  .sw{position:relative;width:50px;height:30px;flex-shrink:0}
+  .sw input{opacity:0;width:0;height:0}
+  .sw i{position:absolute;inset:0;background:#d9d2c7;border-radius:99px;transition:.2s;cursor:pointer}
+  .sw i::before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .sw input:checked + i{background:var(--ok)}
+  .sw input:checked + i::before{transform:translateX(20px)}
+  .vars{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 4px}
+  .vars button{font-size:12px;font-weight:700;padding:5px 8px;border-radius:8px;background:var(--acc-soft);color:#8a6420}
+  .preview{background:#e7f6ec;border-radius:12px 12px 12px 2px;padding:10px 12px;font-size:13px;color:#1d4a2e;margin-top:6px;white-space:pre-wrap}
+  .item-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .item-row .btn{white-space:nowrap;flex-shrink:0}
+  .tag.off{background:#efe9e0;color:#9a9288}
+  .savebar{position:sticky;bottom:76px;z-index:5;margin-top:6px}
+  .hint{font-size:13px;color:var(--muted);margin:-4px 2px 10px}
+</style>
+</head>
+<body data-api="<?= apiUrl ?>">
+<script>
+/* Muestra en pantalla cualquier error de JavaScript (para diagnosticar sin consola) */
+window.__errs = [];
+window.onerror = function (msg, src, line, col) {
+  window.__errs.push(String(msg) + ' (línea ' + line + (col ? ':' + col : '') + ')');
+  var el = document.getElementById('loginErr');
+  if (el) el.innerHTML = 'Error del panel:<br>' + window.__errs.slice(0, 3).join('<br>').replace(/</g, '&lt;').replace(/&lt;br>/g, '<br>');
+};
+</script>
+
+
+<!-- LOGIN -->
+<section id="login">
+  <div class="login-box">
+    <div class="logo-mark">💈</div>
+    <h1 id="loginTitle">Panel de la barbería</h1>
+    <p>Ingresa tu PIN para continuar</p>
+    <input id="pin" class="pin-input" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••">
+    <button class="btn acc block" style="margin-top:14px" onclick="login()">Entrar</button>
+ <p style="color:#5f584f;font-size:11px;margin-top:22px">v1.5 · <span id="canal"></span></p>
+    <p id="loginErr" style="color:#ff9b8f;font-weight:700;font-size:14px;margin-top:14px;line-height:1.45"></p>
+  </div>
+</section>
+
+<!-- APP -->
+<section id="app" class="hidden">
+  <header>
+    <div class="hrow">
+      <div class="brand"><span class="dot">💈</span><span id="bizName">Barbería</span></div>
+      <button class="icon-btn" title="Actualizar" onclick="refresh()">⟳</button>
+    </div>
+    <div class="date-nav" id="dateNav">
+      <button onclick="moveDay(-1)">‹</button>
+      <div class="lbl" id="dateLbl">Hoy</div>
+      <button class="today-btn" onclick="goToday()">Hoy</button>
+      <button onclick="moveDay(1)">›</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="v-hoy"></div>
+    <div id="v-avisos" class="hidden"></div>
+    <div id="v-caja" class="hidden"></div>
+    <div id="v-clientes" class="hidden"></div>
+    <div id="v-ajustes" class="hidden"></div>
+  </main>
+
+  <button class="fab" id="fab" onclick="openNuevo()">+</button>
+
+  <nav class="tabs">
+    <button data-v="hoy" class="on" onclick="go('hoy')"><span class="ic">📅</span>Agenda</button>
+    <button data-v="avisos" onclick="go('avisos')"><span class="ic">💬</span>Avisos<span class="badge-n hidden" id="avisosN"></span></button>
+    <button data-v="caja" onclick="go('caja')"><span class="ic">💵</span>Caja</button>
+    <button data-v="clientes" onclick="go('clientes')"><span class="ic">👥</span>Clientes</button>
+    <button data-v="ajustes" onclick="go('ajustes')"><span class="ic">⚙️</span>Ajustes</button>
+  </nav>
+</section>
+
+<div id="modalRoot"></div>
+<div id="loading" class="loading hidden"><div class="spin"></div></div>
+
+<script>
+var S = { pin: null, info: null, fecha: null, hoy: null, view: 'hoy', dia: null, timer: null };
+var ESTADO_TXT = { RESERVADA: 'Reservada', CONFIRMADA: 'Confirmada', EN_ESPERA: 'En espera', ATENDIENDO: 'Atendiendo', TERMINADA: 'Atendido', CANCELADA: 'Cancelada', NO_ASISTIO: 'No vino' };
+var ORIGEN = { WEB: ['web', '🌐 Web'], LOCAL: ['local', '🚶 Llegó al local'], TELEFONO: ['tel', '📞 Teléfono'] };
+
+/* ---------- utilidades ---------- */
+var _$ = (id) => document.getElementById(id);
+var esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+var soles = (n) => 'S/ ' + (Number(n) || 0).toFixed(2).replace(/\.00$/, '');
+function loading(on) { _$('loading').classList.toggle('hidden', !on); }
+function toast(msg, err) {
+  const t = document.createElement('div'); t.className = 'toast' + (err ? ' err' : ''); t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), err ? 4200 : 2600);
+}
+/* URL de la Web App: Google la pone sola cuando el panel se abre desde …/exec?p=panel.
+   Si subes este archivo a GitHub Pages como panel aparte, pega aquí la URL /exec. */
+var API_URL_MANUAL = 'https://script.google.com/macros/s/AKfycbyifHwGjQMsqQ7LGQXhiZFNx1urT-snC6-VpfIQa02bgUWLeikNv0Dm6U2BGa38-Lsn/exec';
+var API_URL = (function () { const u = (document.body.getAttribute('data-api') || '').trim(); return /^https?:\/\//.test(u) ? u : API_URL_MANUAL; })();
+
+document.getElementById('canal').textContent = API_URL ? 'conexión directa' : 'conexión Google';
+function call(fn, ...args) {
+  if (API_URL) {
+    // Canal principal: fetch sin cookies (funciona en incógnito, Brave, Safari, varias cuentas)
+    return fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'panel', fn: fn, pin: S.pin, args: args }) })
+      .then((r) => r.json())
+      .then((j) => { if (!j.ok) throw new Error(j.error || 'Error'); return j.result; });
+  }
+  return new Promise((res, rej) => {
+    if (!window.google || !google.script || !google.script.run) return rej(new Error('NO_GAS'));
+    google.script.run.withSuccessHandler(res).withFailureHandler((e) => rej(e && e.message ? e : new Error(String(e))))[fn](S.pin, ...args);
+  });
+}
+async function run(fn, ...args) {
+  loading(true);
+  try { return await call(fn, ...args); }
+  catch (e) { toast(e.message.replace(/^Error:\s*/, ''), true); throw e; }
+  finally { loading(false); }
+}
+function addDays(ymd, n) { const d = new Date(ymd + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+function mondayOf(ymd) { const d = new Date(ymd + 'T12:00:00'); const w = (d.getDay() + 6) % 7; d.setDate(d.getDate() - w); return d.toISOString().slice(0, 10); }
+function store(k, v) { try { v === null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (e) {} }
+function load(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+function opts(list, sel, extra) {
+  return (extra || '') + list.map((x) => `<option value="${esc(x.id)}" ${String(x.id) === String(sel) ? 'selected' : ''}>${esc(x.nombre)}${x.precio != null ? ' · ' + soles(x.precio) : ''}</option>`).join('');
+}
+
+/* ---------- login ---------- */
+async function login(silent) {
+  const pin = silent || _$('pin').value.trim();
+  if (!pin) return;
+  S.pin = pin;
+  _$('loginErr').textContent = '';
+  // Si Google no responde en 20 s, casi siempre es por cookies bloqueadas (incógnito)
+  const aviso = setTimeout(() => {
+    loading(false);
+    _$('loginErr').innerHTML = 'Google no responde. Si estás en <b>modo incógnito</b> o con cookies de terceros bloqueadas, ábrelo en una ventana normal o toca el ícono 👁 de la barra de direcciones y permite las cookies de terceros.';
+  }, 20000);
+  try {
+    loading(true);
+    const info = await call('panelLogin');
+    clearTimeout(aviso);
+    S.info = info; S.hoy = info.hoy; S.fecha = info.hoy;
+    store('pin', pin);
+    _$('bizName').textContent = info.negocio;
+    _$('login').classList.add('hidden'); _$('app').classList.remove('hidden');
+    go('hoy');
+    clearInterval(S.timer);
+    S.timer = setInterval(() => { if (S.view === 'hoy' && !document.querySelector('.modal-bg')) renderHoy(true); }, 60000);
+    call('panelAvisos').then(updateAvisosBadge).catch(() => {});
+  } catch (e) {
+    clearTimeout(aviso);
+    S.pin = null; store('pin', null);
+    const m = String((e && e.message) || e);
+    if (!silent) {
+      _$('loginErr').innerHTML = /Failed to fetch|NetworkError|Load failed/i.test(m) ? 'Sin conexión con Google. Revisa tu internet e intenta de nuevo.'
+        : /PIN incorrecto/.test(m) ? 'PIN incorrecto. Revisa el valor de <b>pin_panel</b> en la hoja Config.'
+        : m === 'NO_GAS' ? 'Falta la URL del sistema. Abre el panel desde el link …/exec?p=panel.'
+        : /bloqueado/.test(m) ? esc(m)
+        : 'No se pudo conectar: ' + esc(m.replace(/^Error:\s*/, '')) + '<br>Prueba en una ventana normal (no incógnito) o permite las cookies de terceros.';
+    }
+  } finally { loading(false); }
+}
+_$('pin').addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
+
+/* ---------- navegación ---------- */
+function go(v) {
+  S.view = v;
+  document.querySelectorAll('nav.tabs button').forEach((b) => b.classList.toggle('on', b.dataset.v === v));
+  ['hoy', 'avisos', 'caja', 'clientes', 'ajustes'].forEach((x) => _$('v-' + x).classList.toggle('hidden', x !== v));
+  _$('dateNav').classList.toggle('hidden', v !== 'hoy');
+  _$('fab').classList.toggle('hidden', v !== 'hoy');
+  if (v === 'hoy') renderHoy();
+  if (v === 'avisos') renderAvisos();
+  if (v === 'caja') renderCaja('semana');
+  if (v === 'clientes') renderClientes();
+  if (v === 'ajustes') renderAjustes();
+  window.scrollTo(0, 0);
+}
+function refresh() { go(S.view); }
+function moveDay(n) { S.fecha = addDays(S.fecha, n); renderHoy(); }
+function goToday() { S.fecha = S.hoy; renderHoy(); }
+
+/* ---------- AGENDA / HOY ---------- */
+async function renderHoy(silent) {
+  let d;
+  try { d = silent ? await call('panelDia', S.fecha) : await run('panelDia', S.fecha); } catch (e) { return; }
+  S.dia = d;
+  const esHoy = S.fecha === S.hoy;
+  _$('dateLbl').textContent = esHoy ? 'Hoy · ' + d.fecha_texto : d.fecha_texto;
+  const c = d.citas;
+  const cola = c.filter((x) => x.estado === 'EN_ESPERA' || x.estado === 'ATENDIENDO').sort((a, b) => (a.estado === 'ATENDIENDO' ? -1 : 1) - (b.estado === 'ATENDIENDO' ? -1 : 1) || String(a.llegada || a.hora).localeCompare(String(b.llegada || b.hora)));
+  const agenda = c.filter((x) => x.estado === 'RESERVADA' || x.estado === 'CONFIRMADA').sort((a, b) => a.hora.localeCompare(b.hora));
+  const hechos = c.filter((x) => x.estado === 'TERMINADA').sort((a, b) => b.hora.localeCompare(a.hora));
+  const otros = c.filter((x) => x.estado === 'CANCELADA' || x.estado === 'NO_ASISTIO');
+
+  let h = `<div class="stats">
+    <div class="stat"><b>${agenda.length}</b><span>Por llegar</span></div>
+    <div class="stat"><b>${cola.length}</b><span>En el local</span></div>
+    <div class="stat"><b>${d.atendidos}</b><span>Atendidos</span></div>
+    <div class="stat"><b>${Math.round(d.ventas_total)}</b><span>Caja S/</span></div>
+  </div>`;
+  if (!S.vistaDia) S.vistaDia = load('vistaDia') || 'lista';
+  h += `<div class="vtog"><button class="${S.vistaDia === 'lista' ? 'on' : ''}" onclick="setVistaDia('lista')">☰ Lista</button><button class="${S.vistaDia === 'cal' ? 'on' : ''}" onclick="setVistaDia('cal')">▦ Calendario</button></div>`;
+  if (S.vistaDia === 'cal') { _$('v-hoy').innerHTML = h + calendarioDia(c, esHoy); scrollAhora(); return; }
+  if (esHoy) {
+    h += `<h2 class="sec">En el local ahora <small>${cola.length} cliente(s)</small></h2>`;
+    h += cola.length ? cola.map((x, i) => card(x, i + 1)).join('') : `<div class="empty">Nadie esperando. Cuando llegue alguien sin cita, toca <b>+</b></div>`;
+  }
+  h += `<h2 class="sec">${esHoy ? 'Próximas citas' : 'Citas del día'} <small>${agenda.length}</small></h2>`;
+  h += agenda.length ? agenda.map((x) => card(x)).join('') : `<div class="empty">No hay citas pendientes</div>`;
+  if (hechos.length) {
+    const ver = S.verTodos ? hechos : hechos.slice(0, 4);
+    h += `<h2 class="sec">Atendidos <small>${hechos.length}</small></h2>` + ver.map((x) => card(x)).join('');
+    if (hechos.length > 4) h += `<button class="btn block" style="margin-bottom:8px" onclick="S.verTodos=!S.verTodos;renderHoy(true)">${S.verTodos ? 'Ver menos' : 'Ver los ' + hechos.length + ' atendidos'}</button>`;
+  }
+  if (otros.length) h += `<h2 class="sec">Cancelados / no vinieron <small>${otros.length}</small></h2>` + otros.map((x) => card(x)).join('');
+  _$('v-hoy').innerHTML = h;
+}
+
+function setVistaDia(v) { S.vistaDia = v; store('vistaDia', v); renderHoy(); }
+
+/* Calendario del día: una columna por barbero, filas por franja horaria */
+function calendarioDia(citas, esHoy) {
+  var H = S.info.horario, step = H.intervalo || 30, ROW = 46, HEAD = 38;
+  var abre = toMin(H.apertura), cierra = toMin(H.cierre);
+  var vis = citas.filter(function (x) { return x.estado !== 'CANCELADA' && x.estado !== 'NO_ASISTIO'; });
+  // Filas: el horario de atención + solo las franjas fuera de horario que tienen atenciones (ej. 00:50)
+  var set = {};
+  for (var t0 = Math.floor(abre / step) * step; t0 < cierra; t0 += step) set[t0] = 1;
+  vis.forEach(function (x) {
+    var i = toMin(x.hora), f = toMin(x.hora_fin || x.hora);
+    if (f <= i) f = Math.min(24 * 60, i + step);
+    for (var k = Math.floor(i / step) * step; k < f; k += step) set[k] = 1;
+  });
+  var tiempos = Object.keys(set).map(Number).sort(function (a, b) { return a - b; });
+  // Inserta una franja "Cerrado" donde hay saltos de tiempo
+  var rows = [];
+  tiempos.forEach(function (t, i) {
+    if (i > 0 && t - tiempos[i - 1] > step) rows.push({ gap: true, desde: tiempos[i - 1] + step, hasta: t });
+    rows.push({ t: t });
+  });
+  var idx = {}; rows.forEach(function (r, i) { if (!r.gap) idx[r.t] = i; });
+  var open = tiempos[0], close = tiempos[tiempos.length - 1] + step;
+  var filas = rows.length;
+  var cols = S.info.barberos.map(function (b) { return { id: b.id, nombre: b.nombre }; });
+  if (vis.some(function (x) { return !x.barbero_id; })) cols.push({ id: '', nombre: 'Sin asignar' });
+  var nowMin = esHoy ? toMin(nowHM()) : -1;
+  var pasado = S.fecha < S.hoy;
+  var g = '<div class="th corner"></div>' + cols.map(function (c) { return '<div class="th">' + esc(c.nombre) + '</div>'; }).join('');
+  for (var r = 0; r < filas; r++) {
+    if (rows[r].gap) {
+      g += '<div class="gap" style="grid-row:' + (r + 2) + ';grid-column:1 / span ' + (cols.length + 1) + '">Cerrado · ' + toHM(rows[r].desde) + ' – ' + toHM(rows[r].hasta) + '</div>';
+      continue;
+    }
+    var t = rows[r].t, hm = toHM(t), half = t % 60 !== 0;
+    var fuera = t < abre || t >= cierra;
+    g += '<div class="hh ' + (half ? 'half' : '') + (fuera ? ' out' : '') + '" style="grid-row:' + (r + 2) + ';grid-column:1">' + hm + '</div>';
+    cols.forEach(function (c, ci) {
+      var ocupado = vis.some(function (x) { return String(x.barbero_id) === String(c.id) && toMin(x.hora) < t + step && t < toMin(x.hora_fin || x.hora); });
+      var yaPaso = pasado || (esHoy && t + step <= nowMin);
+      var libre = !yaPaso && !ocupado && !fuera && c.id;
+      var cls = 'cell' + (half ? ' half' : '') + (fuera ? ' out' : yaPaso ? ' past' : libre ? ' free' : '');
+      var click = libre ? ' onclick="openNuevo(\'cita\',{fecha:\'' + S.fecha + '\',hora:\'' + hm + '\',barbero:\'' + c.id + '\'})"' : '';
+      g += '<div class="' + cls + '" style="grid-row:' + (r + 2) + ';grid-column:' + (ci + 2) + '"' + click + '></div>';
+    });
+  }
+  var ORI = { WEB: '🌐 Web', LOCAL: '🚶 Local', TELEFONO: '📞 Teléfono' };
+  vis.forEach(function (x) {
+    var ci = cols.findIndex(function (c) { return String(c.id) === String(x.barbero_id || ''); });
+    if (ci < 0) return;
+    var ini = toMin(x.hora), fin = toMin(x.hora_fin || x.hora);
+    if (fin <= ini) fin = Math.min(24 * 60, ini + step);
+    var tIni = Math.floor(ini / step) * step;
+    if (idx[tIni] === undefined) return;
+    var r0 = idx[tIni] + 2, span = 0;
+    for (var k = tIni; k < fin; k += step) if (idx[k] !== undefined) span++;
+    span = Math.max(1, span);
+    var detalle = x.cliente_nombre + ' · ' + x.hora + '–' + (x.hora_fin || '') + ' · ' + x.servicio + ' · ' + (ESTADO_TXT[x.estado] || x.estado);
+    var body = span === 1
+      ? '<b>' + esc(x.cliente_nombre) + ' <small>' + esc(x.hora) + '</small></b><span>' + esc(x.servicio) + '</span>'
+      : '<b>' + esc(x.cliente_nombre) + '</b><span>' + esc(x.hora) + '–' + esc(x.hora_fin || '') + ' · ' + esc(x.servicio) + '</span><span>' + (ORI[x.origen] || '') + ' · ' + (ESTADO_TXT[x.estado] || '') + '</span>';
+    g += '<div class="ev s-' + x.estado + '" title="' + esc(detalle) + '" style="grid-row:' + r0 + ' / span ' + span + ';grid-column:' + (ci + 2) + '" onclick="verCita(\'' + x.id + '\')">' + body + '</div>';
+  });
+  var tNow = Math.floor(nowMin / step) * step;
+  if (esHoy && idx[tNow] !== undefined) {
+    var top = HEAD; for (var q = 0; q < idx[tNow]; q++) top += rows[q].gap ? 34 : ROW;
+    g += '<div class="now" style="top:' + (top + ((nowMin - tNow) / step) * ROW) + 'px"></div>';
+  }
+  var hayFuera = open < abre || close > cierra;
+  var plantilla = rows.map(function (r) { return r.gap ? '34px' : ROW + 'px'; }).join(' ');
+  return '<div class="tl-wrap" id="tlWrap"><div class="tl" style="grid-template-columns:56px repeat(' + cols.length + ',minmax(130px,1fr));grid-template-rows:' + HEAD + 'px ' + plantilla + '">' + g + '</div></div>'
+    + '<div class="tl-legend"><span><i style="background:var(--blue-soft);border-left:3px solid var(--blue)"></i>Reservada</span><span><i style="background:var(--warn-soft);border-left:3px solid var(--warn)"></i>En espera</span><span><i style="background:var(--acc-soft);border-left:3px solid var(--acc)"></i>Atendiendo</span><span><i style="background:var(--ok-soft);border-left:3px solid var(--ok)"></i>Atendido</span><span><i style="border:1px solid var(--line);background:#fff"></i>Libre (toca para agendar)</span>'
+    + (hayFuera ? '<span><i style="background:#ece6dd"></i>Fuera de horario</span>' : '') + '</div>';
+}
+function scrollAhora() {
+  const w = _$('tlWrap'), n = w && w.querySelector('.now');
+  if (n) window.scrollTo(0, Math.max(0, n.getBoundingClientRect().top + window.scrollY - 220));
+}
+function verCita(id) {
+  const x = S.dia.citas.find((c) => c.id === id); if (!x) return;
+  modal(`<div class="mhead"><h3>${esc(x.hora)} · ${esc(x.cliente_nombre)}</h3><button class="btn ghost" onclick="closeModal()">✕</button></div>${card(x).replace(/onclick="(estado|cancelar|atender|openCobro)\(/g, 'onclick="closeModal();$1(')}`);
+}
+function nowHM() { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+function toMin(hm) { const p = String(hm).split(':'); return parseInt(p[0], 10) * 60 + parseInt(p[1] || '0', 10); }
+function toHM(m) { return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+
+function card(x, turno) {
+  const o = ORIGEN[x.origen] || ['', x.origen];
+  const esHoy = S.fecha === S.hoy;
+  const sinBarbero = !x.barbero_id;
+  let acts = '';
+  const wa = x.telefono ? `<a class="btn sm wa" href="https://wa.me/${esc(x.telefono)}" target="_blank" rel="noopener">WhatsApp</a>` : '';
+  if (x.estado === 'RESERVADA' || x.estado === 'CONFIRMADA') {
+    acts = (esHoy ? `<button class="btn sm pri" onclick="estado('${x.id}','EN_ESPERA')">✓ Llegó</button><button class="btn sm" onclick="estado('${x.id}','NO_ASISTIO')">No vino</button>` : '')
+      + (x.estado === 'RESERVADA' ? `<button class="btn sm" onclick="estado('${x.id}','CONFIRMADA')">Confirmar</button>` : '')
+      + wa + `<button class="btn sm ghost" onclick="cancelar('${x.id}')">Cancelar</button>`;
+  } else if (x.estado === 'EN_ESPERA') {
+    acts = (sinBarbero ? `<select class="sel-inline" id="bsel-${x.id}">${opts(S.info.barberos, '', '<option value="">¿Quién lo atiende?</option>')}</select>` : '')
+      + `<button class="btn sm acc" onclick="atender('${x.id}', ${sinBarbero})">✂️ Atender</button>` + wa
+      + `<button class="btn sm ghost" onclick="cancelar('${x.id}')">Se fue</button>`;
+  } else if (x.estado === 'ATENDIENDO') {
+    acts = `<button class="btn sm ok" onclick="openCobro('${x.id}')">💵 Cobrar</button>`;
+  }
+  const hora = x.origen === 'LOCAL' ? (x.llegada || x.hora) : x.hora;
+  return `<div class="card s-${x.estado}">
+    <div class="crow">
+      <div class="time">${turno ? '#' + turno : esc(hora)}<small>${turno ? 'llegó ' + esc(hora) : esc(x.hora_fin ? '→ ' + x.hora_fin : '')}</small></div>
+      <div class="cinfo">
+        <div class="cname">${esc(x.cliente_nombre)}</div>
+        <div class="cmeta">${esc(x.servicio)} · ${esc(x.barbero || 'Por asignar')}</div>
+        <div class="tags"><span class="tag ${o[0]}">${o[1]}</span><span class="tag ${x.estado === 'TERMINADA' ? 'ok' : x.estado === 'ATENDIENDO' ? 'gold' : ''}">${ESTADO_TXT[x.estado] || x.estado}</span>${x.notas ? `<span class="tag">📝 ${esc(x.notas)}</span>` : ''}</div>
+      </div>
+    </div>
+    ${acts ? `<div class="actions">${acts}</div>` : ''}
+  </div>`;
+}
+
+async function estado(id, est, barbero) {
+  try { await run('panelEstado', id, est, barbero || ''); } catch (e) { return; }
+  const msg = { EN_ESPERA: 'Cliente en el local', NO_ASISTIO: 'Marcado como no vino', CONFIRMADA: 'Cita confirmada', CANCELADA: 'Cancelado', ATENDIENDO: 'Atendiendo ✂️' }[est];
+  if (msg) toast(msg);
+  renderHoy(true);
+}
+function cancelar(id) { if (confirm('¿Cancelar esta cita?')) estado(id, 'CANCELADA'); }
+function atender(id, necesitaBarbero) {
+  let b = '';
+  if (necesitaBarbero) { b = _$('bsel-' + id).value; if (!b) return toast('Elige qué barbero lo atiende', true); }
+  estado(id, 'ATENDIENDO', b);
+}
+
+/* ---------- MODALES ---------- */
+function modal(html) {
+  _$('modalRoot').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`;
+}
+function closeModal() { _$('modalRoot').innerHTML = ''; }
+
+function openNuevo(tab, pre) {
+  tab = tab || 'local'; pre = pre || {}; S.pre = pre;
+  const sv = S.info.servicios, bb = S.info.barberos;
+  modal(`<div class="mhead"><h3>Agregar cliente</h3><button class="btn ghost" onclick="closeModal()">✕</button></div>
+    <div class="seg"><button class="${tab === 'local' ? 'on' : ''}" onclick="openNuevo('local',S.pre)">🚶 Llegó ahora</button><button class="${tab === 'cita' ? 'on' : ''}" onclick="openNuevo('cita',S.pre)">📅 Nueva cita</button></div>
+    <div class="grid2">
+      <label class="f"><span>Nombre</span><input class="inp" id="nNombre" placeholder="Ej: Carlos" autocomplete="off"></label>
+      <label class="f"><span>Celular</span><input class="inp" id="nTel" inputmode="tel" placeholder="987654321" autocomplete="off"></label>
+    </div>
+    ${tab === 'local' ? `<p class="hint">Con el celular sumamos sus cortes para la promo y le podemos escribir luego.</p>` : ''}
+    <label class="f"><span>Servicio</span><select class="inp" id="nServ" onchange="loadHoras()">${opts(sv, sv[0] && sv[0].id)}</select></label>
+    <label class="f"><span>Barbero</span><select class="inp" id="nBarb" onchange="loadHoras()">${opts(bb, pre.barbero || '', `<option value="">${tab === 'local' ? 'El que esté libre' : 'Cualquiera disponible'}</option>`)}</select></label>
+    ${tab === 'cita' ? `<label class="f"><span>Fecha</span><input class="inp" type="date" id="nFecha" value="${pre.fecha || (S.fecha < S.hoy ? S.hoy : S.fecha)}" min="${S.hoy}" onchange="loadHoras()"></label>
+      <label class="f"><span>Hora</span><div class="chips" id="nHoras"><span class="hint">Cargando…</span></div></label>` : ''}
+    <label class="f"><span>Nota (opcional)</span><input class="inp" id="nNota" placeholder="Ej: degradado bajo, viene con su hijo"></label>
+    <button class="btn pri block" onclick="guardarNuevo('${tab}')">${tab === 'local' ? 'Agregar a la cola' : 'Guardar cita'}</button>`);
+  S.horaSel = null;
+  if (tab === 'cita') loadHoras();
+}
+
+async function loadHoras() {
+  const box = _$('nHoras'); if (!box) return;
+  box.innerHTML = '<span class="hint">Cargando…</span>'; S.horaSel = null;
+  try {
+    const slots = await call('panelHorarios', _$('nFecha').value, _$('nServ').value, _$('nBarb').value);
+    box.innerHTML = slots.length ? slots.map((s) => s.libre
+      ? `<button class="chip" data-h="${s.hora}" onclick="pickHora(this,'${s.hora}')">${s.hora}</button>`
+      : `<button class="chip busy" disabled title="Ocupado">${s.hora}</button>`).join('') : '<span class="hint">Sin horarios ese día</span>';
+    if (S.pre && S.pre.hora) { const c = box.querySelector(`[data-h="${S.pre.hora}"]`); if (c) pickHora(c, S.pre.hora); S.pre.hora = null; }
+  } catch (e) { box.innerHTML = `<span class="hint">${esc(e.message)}</span>`; }
+}
+function pickHora(el, h) { document.querySelectorAll('#nHoras .chip').forEach((c) => c.classList.remove('on')); el.classList.add('on'); S.horaSel = h; }
+
+async function guardarNuevo(tab) {
+  const d = { nombre: _$('nNombre').value.trim(), telefono: _$('nTel').value.trim(), servicio_id: _$('nServ').value, barbero_id: _$('nBarb').value, notas: _$('nNota').value.trim() };
+  if (tab === 'local') {
+    try { await run('panelLlegada', d); } catch (e) { return; }
+    closeModal(); toast('Agregado a la cola'); S.fecha = S.hoy; renderHoy(true);
+  } else {
+    if (!d.nombre) return toast('Escribe el nombre', true);
+    if (!S.horaSel) return toast('Elige una hora', true);
+    d.fecha = _$('nFecha').value; d.hora = S.horaSel;
+    try { await run('panelNuevaCita', d); } catch (e) { return; }
+    closeModal(); toast('Cita guardada ✓'); S.fecha = d.fecha; renderHoy(true);
+  }
+}
+
+/* ---------- COBRO ---------- */
+async function openCobro(id) {
+  let r; try { r = await run('panelPrepararCobro', id); } catch (e) { return; }
+  const ci = r.cita, f = r.fidelidad;
+  const sv = S.info.servicios.find((s) => s.id === ci.servicio_id) || S.info.servicios[0];
+  S.cobro = { id: id, metodo: 'EFECTIVO', gratis: f.gratis_disponible };
+  let fidHtml = '';
+  if (f.activa && r.cliente && r.cliente.telefono) {
+    const dots = Array.from({ length: f.cada }, (_, i) => `<i class="${i < Math.min(f.contador, f.cada) ? 'f' : ''}"></i>`).join('');
+    fidHtml = f.gratis_disponible
+      ? `<div class="fid gift"><div class="t">🎁 ¡Le toca un corte GRATIS!<span>${f.contador}/${f.cada}</span></div><div class="dots">${dots}</div>
+         <label class="switch"><input type="checkbox" id="cGratis" checked onchange="S.cobro.gratis=this.checked;calcTotal()"> Usar corte gratis ahora</label></div>`
+      : `<div class="fid"><div class="t">Tarjeta de fidelidad<span>${f.contador}/${f.cada}</span></div><div class="dots">${dots}</div>
+         <div class="hint" style="margin:8px 0 0">Con este corte lleva ${f.contador + 1}. ${f.contador + 1 >= f.cada ? '¡El próximo es gratis! 🎉' : 'Le faltan ' + (f.cada - f.contador - 1) + ' para el gratis.'}</div></div>`;
+  } else if (f.activa) {
+    fidHtml = `<p class="hint">💡 Este cliente no tiene celular registrado, así que no suma para la promo.</p>`;
+  }
+  const codHtml = r.cliente && r.cliente.codigo ? `<div class="codebox"><span>Código del cliente para ver sus puntos en la web</span><b>${esc(r.cliente.codigo)}</b></div>` : '';
+  modal(`<div class="mhead"><h3>Cobrar · ${esc(ci.cliente_nombre)}</h3><button class="btn ghost" onclick="closeModal()">✕</button></div>
+    ${fidHtml}${codHtml}
+    <label class="f"><span>Servicio</span><select class="inp" id="cServ" onchange="servChange()">${opts(S.info.servicios, sv && sv.id)}</select></label>
+    <label class="f"><span>Barbero</span><select class="inp" id="cBarb">${opts(S.info.barberos, ci.barbero_id, ci.barbero_id ? '' : '<option value="">Elige…</option>')}</select></label>
+    <div class="grid2">
+      <label class="f"><span>Precio S/</span><input class="inp" id="cPrecio" type="number" inputmode="decimal" value="${sv ? sv.precio : 0}" oninput="calcTotal()"></label>
+      <label class="f"><span>Descuento S/</span><input class="inp" id="cDesc" type="number" inputmode="decimal" value="0" oninput="calcTotal()"></label>
+    </div>
+    <div id="cMetodoBox"><label class="f"><span>¿Cómo pagó?</span><div class="chips" id="cMetodo">
+      ${['EFECTIVO', 'YAPE', 'PLIN', 'TARJETA'].map((m) => `<button class="chip ${m === 'EFECTIVO' ? 'on' : ''}" onclick="pickMetodo(this,'${m}')">${{ EFECTIVO: '💵 Efectivo', YAPE: '🟣 Yape', PLIN: '🔵 Plin', TARJETA: '💳 Tarjeta' }[m]}</button>`).join('')}
+    </div></label></div>
+    <div class="total-box"><span>Total a cobrar</span><b id="cTotal">S/ 0</b></div>
+    <button class="btn ok block" onclick="confirmarCobro()">Confirmar cobro</button>`);
+  calcTotal();
+}
+function servChange() { const s = S.info.servicios.find((x) => x.id === _$('cServ').value); if (s) _$('cPrecio').value = s.precio; calcTotal(); }
+function pickMetodo(el, m) { document.querySelectorAll('#cMetodo .chip').forEach((c) => c.classList.remove('on')); el.classList.add('on'); S.cobro.metodo = m; }
+function calcTotal() {
+  const p = Number(_$('cPrecio').value) || 0, d = Number(_$('cDesc').value) || 0;
+  const t = S.cobro.gratis ? 0 : Math.max(0, p - d);
+  _$('cTotal').textContent = S.cobro.gratis ? 'GRATIS 🎁' : soles(t);
+  _$('cMetodoBox').classList.toggle('hidden', S.cobro.gratis);
+  _$('cDesc').disabled = S.cobro.gratis;
+}
+async function confirmarCobro() {
+  const b = _$('cBarb').value; if (!b) return toast('Elige el barbero', true);
+  let r;
+  try {
+    r = await run('panelCobrar', { cita_id: S.cobro.id, servicio_id: _$('cServ').value, barbero_id: b, precio: _$('cPrecio').value, descuento: _$('cDesc').value, metodo_pago: S.cobro.metodo, usar_gratis: S.cobro.gratis });
+  } catch (e) { return; }
+  closeModal();
+  let msg = r.atencion.gratis_fidelidad === 'SI' ? 'Corte gratis aplicado 🎁' : 'Cobrado ' + soles(r.atencion.total);
+  if (r.fidelidad && r.fidelidad.proximo_gratis) msg += ' · ¡Su próximo corte es gratis!';
+  else if (r.fidelidad && S.info.fidelidad.activa) msg += ` · Lleva ${r.fidelidad.contador}/${r.fidelidad.cada}`;
+  toast(msg);
+  renderHoy(true);
+}
+
+/* ---------- AVISOS (WhatsApp) ---------- */
+function updateAvisosBadge(a) {
+  const n = a.recordatorios.filter((x) => !x.enviado).length + a.regreso.length;
+  _$('avisosN').textContent = n; _$('avisosN').classList.toggle('hidden', !n);
+}
+async function renderAvisos() {
+  let a; try { a = await run('panelAvisos'); } catch (e) { return; }
+  updateAvisosBadge(a);
+  const pend = a.recordatorios.filter((x) => !x.enviado);
+  let h = `<h2 class="sec">Recordatorios de citas <small>${pend.length} por enviar</small></h2>`;
+  h += `<p class="hint">Toca el botón: se abre WhatsApp con el mensaje listo. Solo dale enviar.</p>`;
+  h += a.recordatorios.length ? a.recordatorios.map((x) => `<div class="card s-${x.enviado ? 'TERMINADA' : 'RESERVADA'}">
+      <div class="crow"><div class="time">${esc(x.hora)}<small>${x.cuando}</small></div>
+      <div class="cinfo"><div class="cname">${esc(x.cliente)}</div><div class="cmeta">${esc(x.servicio)}</div></div>
+      ${x.enviado ? '<span class="tag ok">✓ Enviado</span>' : `<a class="btn sm wa" href="${esc(x.link)}" target="_blank" rel="noopener" onclick="marcar(this,'recordatorio','${x.id}')">Enviar</a>`}</div></div>`).join('')
+    : `<div class="empty">No hay citas para hoy ni mañana por recordar</div>`;
+
+  h += `<h2 class="sec">Invitar a regresar <small>${a.regreso.length} cliente(s)</small></h2>`;
+  h += `<p class="hint">Clientes que no vienen hace ${a.dias_regreso} días o más y no tienen cita.</p>`;
+  h += a.regreso.length ? a.regreso.map((x) => `<div class="card s-EN_ESPERA">
+      <div class="crow"><div class="time">${x.dias}<small>días</small></div>
+      <div class="cinfo"><div class="cname">${esc(x.cliente)}</div><div class="cmeta">Última visita: ${esc(x.ultima_visita)}</div></div>
+      <a class="btn sm wa" href="${esc(x.link)}" target="_blank" rel="noopener" onclick="marcar(this,'regreso','${x.id}')">Invitar</a></div></div>`).join('')
+    : `<div class="empty">¡Todos tus clientes están al día! 🙌</div>`;
+  _$('v-avisos').innerHTML = h;
+}
+function marcar(el, tipo, id) {
+  el.outerHTML = '<span class="tag ok">✓ Enviado</span>';
+  call('panelMarcarAviso', tipo, id).then(() => call('panelAvisos').then(updateAvisosBadge)).catch(() => {});
+}
+
+/* ---------- CAJA / COMISIONES ---------- */
+async function renderCaja(rango, desde, hasta) {
+  const hoy = S.hoy;
+  if (rango === 'hoy') { desde = hoy; hasta = hoy; }
+  if (rango === 'semana') { desde = mondayOf(hoy); hasta = hoy; }
+  if (rango === 'quincena') { const dd = Number(hoy.slice(8)); desde = hoy.slice(0, 8) + (dd <= 15 ? '01' : '16'); hasta = hoy; }
+  if (rango === 'mes') { desde = hoy.slice(0, 8) + '01'; hasta = hoy; }
+  let r; try { r = await run('panelComisiones', desde, hasta); } catch (e) { return; }
+  const max = Math.max(1, ...r.barberos.map((b) => b.vendido));
+  const metodoTxt = { EFECTIVO: '💵 Efectivo', YAPE: '🟣 Yape', PLIN: '🔵 Plin', TARJETA: '💳 Tarjeta', GRATIS: '🎁 Gratis' };
+  let h = `<div class="chips" style="margin-bottom:10px">${[['hoy', 'Hoy'], ['semana', 'Esta semana'], ['quincena', 'Quincena'], ['mes', 'Este mes']].map(([k, t]) => `<button class="chip ${rango === k ? 'on' : ''}" onclick="renderCaja('${k}')">${t}</button>`).join('')}</div>
+    <div class="grid2" style="margin-bottom:12px">
+      <input class="inp" type="date" id="cjD" value="${desde}" onchange="renderCaja('custom',this.value,_$('cjH').value)">
+      <input class="inp" type="date" id="cjH" value="${hasta}" onchange="renderCaja('custom',_$('cjD').value,this.value)">
+    </div>
+    <div class="kpis">
+      <div class="kpi dark"><span>Ventas</span><b>${soles(r.total)}</b></div>
+      <div class="kpi"><span>Atenciones</span><b>${r.atenciones}</b></div>
+      <div class="kpi"><span>Comisiones a pagar</span><b>${soles(r.comisiones)}</b></div>
+      <div class="kpi"><span>Queda para el local</span><b>${soles(r.total - r.comisiones)}</b></div>
+    </div>
+    <h2 class="sec">Pago por barbero</h2>`;
+  h += r.barberos.length ? r.barberos.map((b) => `<div class="card s-ATENDIENDO">
+      <div class="brow"><div><div class="cname">${esc(b.barbero)}</div><div class="cmeta">${b.atenciones} atenciones${b.gratis ? ' · ' + b.gratis + ' gratis' : ''} · vendió ${soles(b.vendido)}</div></div>
+      <div class="big"><small>A pagar</small>${soles(b.comision)}</div></div>
+      <div class="bar"><i style="width:${(b.vendido / max) * 100}%"></i></div></div>`).join('')
+    : `<div class="empty">Sin atenciones en este periodo</div>`;
+  const ms = Object.keys(r.metodos);
+  if (ms.length) h += `<h2 class="sec">Por forma de pago</h2><div class="card">` + ms.map((m) => `<div class="brow" style="padding:6px 0"><span>${metodoTxt[m] || m}</span><b>${soles(r.metodos[m])}</b></div>`).join('') + `</div>`;
+  _$('v-caja').innerHTML = h;
+}
+
+/* ---------- CLIENTES ---------- */
+var qTimer;
+function renderClientes() {
+  _$('v-clientes').innerHTML = `<input class="inp" id="qCli" placeholder="🔎 Buscar por nombre o celular" oninput="clearTimeout(qTimer);qTimer=setTimeout(buscarClientes,350)" style="margin-bottom:12px"><div id="cliList"></div>`;
+  buscarClientes();
+}
+async function buscarClientes() {
+  let r; try { r = await call('panelClientes', (_$('qCli') || {}).value || ''); } catch (e) { return toast(e.message, true); }
+  const fa = S.info.fidelidad.activa;
+  _$('cliList').innerHTML = r.length ? r.map((c) => `<div class="card">
+    <div class="brow"><div class="cinfo"><div class="cname">${esc(c.nombre)}</div>
+      <div class="cmeta">${c.codigo ? '🔑 ' + esc(c.codigo) + ' · ' : ''}${c.total_visitas} visitas · ${c.dias == null ? 'Sin visitas aún' : c.dias === 0 ? 'Vino hoy' : 'Hace ' + c.dias + ' días'}${c.gratis_usados ? ' · 🎁 ' + c.gratis_usados + ' gratis' : ''}</div></div>
+      ${c.telefono ? `<a class="btn sm wa" href="https://wa.me/${esc(c.telefono)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}</div>
+    ${fa ? `<div class="bar"><i style="width:${Math.min(100, (c.contador / c.cada) * 100)}%"></i></div><div class="cmeta" style="margin-top:4px">Fidelidad ${c.contador}/${c.cada}${c.contador >= c.cada ? ' · 🎁 ¡le toca gratis!' : ''}</div>` : ''}
+  </div>`).join('') : `<div class="empty">Aún no hay clientes${(_$('qCli') || {}).value ? ' con esa búsqueda' : ''}</div>`;
+}
+
+/* ---------- AJUSTES ---------- */
+S.ajSec = 'negocio';
+async function renderAjustes() {
+  if (S.info.admin_activo && !S.adminPin) return pedirAdmin();
+  var r;
+  try { r = await run('panelAjustes', S.adminPin || ''); }
+  catch (e) { if (/administrador/.test(e.message)) { S.adminPin = null; pedirAdmin(e.message); } return; }
+  S.aj = r; pintarAjustes();
+}
+function pedirAdmin(err) {
+  _$('v-ajustes').innerHTML = `<div class="ajbox" style="text-align:center;padding:28px 18px"><div style="font-size:34px">🔐</div><h4 style="margin:8px 0 4px">Solo para el administrador</h4>
+    <p>Ingresa el PIN de administrador para cambiar la configuración.</p>
+    <input class="inp" id="admPin" type="password" inputmode="numeric" maxlength="8" placeholder="••••" style="text-align:center;font-size:22px;letter-spacing:10px;margin-bottom:10px">
+    ${err ? `<p style="color:var(--bad);font-weight:700">${esc(err)}</p>` : ''}
+    <button class="btn pri block" onclick="S.adminPin=_$('admPin').value.trim();renderAjustes()">Entrar a Ajustes</button></div>`;
+  setTimeout(function () { var i = _$('admPin'); if (i) i.focus(); }, 50);
+}
+function ajSec(k) { S.ajSec = k; pintarAjustes(); window.scrollTo(0, 0); }
+function fld(k, label, opts) {
+  opts = opts || {};
+  var v = S.aj.config[k] == null ? '' : S.aj.config[k];
+  if (k === 'telefono_whatsapp') v = String(v).replace(/^51(9\d{8})$/, '$1');
+  if (opts.area) return `<label class="f"><span>${label}</span><textarea class="inp" data-k="${k}" id="f_${k}" oninput="${opts.oninput || ''}" placeholder="${esc(opts.ph || '')}">${esc(v)}</textarea>${opts.help ? `<div class="hint" style="margin:4px 0 0">${opts.help}</div>` : ''}</label>`;
+  return `<label class="f"><span>${label}</span><input class="inp" data-k="${k}" id="f_${k}" type="${opts.type || 'text'}" ${opts.inputmode ? `inputmode="${opts.inputmode}"` : ''} value="${esc(v)}" placeholder="${esc(opts.ph || '')}">${opts.help ? `<div class="hint" style="margin:4px 0 0">${opts.help}</div>` : ''}</label>`;
+}
+function sw(k, titulo, sub) {
+  var on = String(S.aj.config[k]).toUpperCase() === 'SI';
+  return `<div class="tog"><div><b>${titulo}</b><span>${sub || ''}</span></div><label class="sw"><input type="checkbox" data-k="${k}" data-sw="1" ${on ? 'checked' : ''}><i></i></label></div>`;
+}
+function botonGuardar() { return `<div class="savebar"><button class="btn ok block" onclick="guardarAjustes()">Guardar cambios</button></div>`; }
+
+function pintarAjustes() {
+  var c = S.aj.config, sec = S.ajSec;
+  var secs = [['negocio', '🏪 Negocio'], ['horario', '🕘 Horario'], ['servicios', '✂️ Servicios'], ['barberos', '💈 Barberos'], ['promos', '🎁 Promos'], ['mensajes', '💬 Mensajes'], ['seguridad', '🔐 Seguridad']];
+  var h = `<div class="ajtabs">${secs.map(function (x) { return `<button class="chip ${sec === x[0] ? 'on' : ''}" onclick="ajSec('${x[0]}')">${x[1]}</button>`; }).join('')}</div><div id="ajForm">`;
+
+  if (sec === 'negocio') {
+    h += `<div class="ajbox"><h4>Datos de la barbería</h4><p>Así aparece tu negocio en la web de reservas y en los mensajes.</p>
+      ${fld('nombre_negocio', 'Nombre')}${fld('tipo_negocio', 'Tipo (texto pequeño)', { ph: 'Barber Studio' })}
+      ${fld('slogan', 'Frase de portada', { ph: 'Cortes que hablan por ti.' })}${fld('descripcion', 'Descripción', { area: 1 })}
+      ${fld('telefono_whatsapp', 'WhatsApp de la barbería', { inputmode: 'tel', ph: '987654321', help: 'Aquí llegan los mensajes de los clientes.' })}
+      <div class="grid2">${fld('direccion', 'Dirección')}${fld('ciudad', 'Ciudad')}</div>
+      ${fld('mapa', 'Ubicación en Google Maps (opcional)', { ph: 'Ej: Barbería Monkey Black, Miraflores', help: 'Si lo dejas vacío se usa la dirección.' })}
+      ${fld('logo_url', 'Link del logo (opcional)', { ph: 'https://…', help: 'Sube el logo a Google Drive o Imgur y pega el link de la imagen.' })}</div>
+      <div class="ajbox"><h4>Redes y web</h4><p>Aparecen en el pie de la web.</p>
+      ${fld('instagram', 'Instagram', { ph: 'https://instagram.com/…' })}${fld('facebook', 'Facebook', { ph: 'https://facebook.com/…' })}${fld('tiktok', 'TikTok', { ph: 'https://tiktok.com/@…' })}
+      ${fld('link_reservas', 'Link de tu web de reservas', { ph: 'https://…', help: 'Se incluye en los mensajes de WhatsApp.' })}
+      ${fld('link_reclamaciones', 'Libro de Reclamaciones virtual (opcional)', { ph: 'https://…', help: 'Aparece en el pie de la web.' })}</div>
+      <div class="ajbox"><h4>Fotos de la web</h4><p>Pega un link de imagen por línea (deben empezar con https://). Puedes subirlas a Imgur, Google Drive o tu Instagram.</p>
+      ${fld('fotos_portada', 'Fotos de portada (hasta 3)', { area: 1, ph: 'https://…/foto1.jpg', help: 'Van rotando en la parte de arriba. Mejor si son horizontales.' })}
+      ${fld('fotos_galeria', 'Galería de trabajos (hasta 8)', { area: 1, ph: 'https://…/corte1.jpg', help: 'Cortes, fades, barbas, el local. Mejor si son cuadradas.' })}</div>` + botonGuardar();
+  }
+
+  if (sec === 'horario') {
+    var dias = String(c.dias_laborables).split(',').map(Number);
+    var nom = ['', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    h += `<div class="ajbox"><h4>Horario de atención</h4><p>La web solo ofrece horas dentro de este horario.</p>
+      <div class="grid2">${fld('hora_apertura', 'Abre', { type: 'time' })}${fld('hora_cierre', 'Cierra', { type: 'time' })}</div>
+      <label class="f"><span>Días que atiende</span><div class="chips" id="diasBox">${[1, 2, 3, 4, 5, 6, 7].map(function (d) { return `<button class="chip ${dias.indexOf(d) >= 0 ? 'on' : ''}" data-d="${d}" onclick="this.classList.toggle('on')">${nom[d]}</button>`; }).join('')}</div></label></div>
+      <div class="ajbox"><h4>Reservas por la web</h4><p>Cómo se reparten los horarios para tus clientes.</p>
+      <label class="f"><span>Mostrar horarios cada</span><select class="inp" data-k="intervalo_min">${[15, 20, 30, 45, 60].map(function (m) { return `<option value="${m}" ${Number(c.intervalo_min) === m ? 'selected' : ''}>${m} minutos</option>`; }).join('')}</select></label>
+      <div class="grid2">${fld('anticipacion_min', 'Anticipación mínima (min)', { type: 'number', inputmode: 'numeric', help: 'Ej: 60 = no se puede reservar para dentro de menos de 1 hora.' })}
+      ${fld('dias_max_reserva', 'Reservar hasta (días)', { type: 'number', inputmode: 'numeric', help: 'Cuántos días adelante se puede reservar.' })}</div></div>` + botonGuardar();
+  }
+
+  if (sec === 'servicios' || sec === 'barberos') {
+    var lista = S.aj[sec];
+    h += `<div class="ajbox"><div class="item-row"><div><h4>${sec === 'servicios' ? 'Servicios y precios' : 'Equipo de barberos'}</h4><p style="margin:0">${sec === 'servicios' ? 'Lo que aparece en la web y al cobrar.' : 'Quién atiende y cuánto gana por servicio.'}</p></div>
+      <button class="btn sm acc" onclick="editarItem('${sec}')">+ Nuevo</button></div></div>`;
+    h += lista.map(function (x) {
+      var act = String(x.activo).toUpperCase() === 'SI';
+      var sub = sec === 'servicios' ? soles(x.precio) + ' · ' + x.duracion_min + ' min' + (x.descripcion ? ' · ' + esc(x.descripcion) : '')
+        : 'Comisión: ' + (String(x.tipo_comision).toUpperCase() === 'FIJO' ? soles(x.valor_comision) + ' por servicio' : x.valor_comision + '%') + (x.especialidad ? ' · ' + esc(x.especialidad) : '');
+      return `<div class="card" style="opacity:${act ? 1 : .6}"><div class="item-row"><div class="cinfo"><div class="cname">${esc(x.nombre)}</div><div class="cmeta">${sub}</div>
+        <div class="tags"><span class="tag ${act ? 'ok' : 'off'}">${act ? 'Activo' : 'Inactivo'}</span></div></div><button class="btn sm" onclick="editarItem('${sec}','${esc(x.id)}')">Editar</button></div></div>`;
+    }).join('');
+  }
+
+  if (sec === 'promos') {
+    h += `<div class="ajbox"><h4>Tarjeta de fidelidad</h4><p>El sistema cuenta los cortes solo y avisa al cobrar cuando toca el gratis.</p>
+      ${sw('fidelidad_activa', 'Promoción activa', 'Cortes gratis por visitas')}
+      <label class="f" style="margin-top:10px"><span>Cortes pagados para ganar 1 gratis</span><select class="inp" data-k="fidelidad_cada">${[3, 4, 5, 6, 7, 8, 9, 10, 12, 15].map(function (n) { return `<option value="${n}" ${Number(c.fidelidad_cada) === n ? 'selected' : ''}>${n} cortes → el ${n + 1}° gratis</option>`; }).join('')}</select></label>
+      ${sw('comision_en_gratis', 'Pagar comisión en cortes gratis', 'El barbero cobra su comisión aunque el cliente no pague')}</div>
+      <div class="ajbox"><h4>Invitar a regresar</h4><p>Clientes que aparecen en Avisos para escribirles.</p>
+      ${fld('dias_regreso', 'Días sin venir', { type: 'number', inputmode: 'numeric', help: 'Ej: 20 = te avisa a los clientes que no vienen hace 20 días o más.' })}</div>` + botonGuardar();
+    h += `<div class="ajbox" style="margin-top:16px"><div class="item-row"><div><h4>Ofertas de la web</h4><p style="margin:0">Se muestran en la sección de promos.</p></div><button class="btn sm acc" onclick="editarItem('ofertas')">+ Nueva</button></div></div>`;
+    h += S.aj.ofertas.map(function (o) {
+      var act = String(o.activo).toUpperCase() === 'SI';
+      return `<div class="card" style="opacity:${act ? 1 : .6}"><div class="item-row"><div class="cinfo"><div class="cname">${esc(o.titulo)} ${o.precio_texto ? '· ' + esc(o.precio_texto) : ''}</div><div class="cmeta">${esc(o.descripcion || '')}</div>
+        <div class="tags"><span class="tag ${act ? 'ok' : 'off'}">${act ? 'Visible' : 'Oculta'}</span></div></div><button class="btn sm" onclick="editarItem('ofertas','${esc(o.id)}')">Editar</button></div></div>`;
+    }).join('');
+  }
+
+  if (sec === 'mensajes') {
+    var vars = ['{nombre}', '{negocio}', '{fecha}', '{hora}', '{servicio}', '{barbero}', '{link}', '{codigo}', '{dias}'];
+    var box = function (k, titulo, desc) {
+      return `<div class="ajbox"><h4>${titulo}</h4><p>${desc}</p>${fld(k, 'Mensaje', { area: 1, oninput: 'previewMsg()' })}
+        <div class="vars">${vars.map(function (v) { return `<button onclick="insVar('${k}','${v}')">${v}</button>`; }).join('')}</div>
+        <div class="preview" id="pv_${k}"></div></div>`;
+    };
+    h += `<p class="hint">Toca una etiqueta para insertarla: el sistema la reemplaza por el dato real de cada cliente.</p>`
+      + box('msg_recordatorio', 'Recordatorio de cita', 'Se envía el día anterior o el mismo día de la cita.')
+      + box('msg_regreso', 'Invitación a regresar', 'Para clientes que no vienen hace varios días.')
+      + box('msg_confirmacion', 'Confirmación de reserva', 'El cliente te lo envía por WhatsApp al terminar de reservar.') + botonGuardar();
+  }
+
+  if (sec === 'seguridad') {
+    h += `<div class="ajbox"><h4>PIN del panel</h4><p>Lo usan el dueño y los barberos para entrar al panel.</p>${fld('pin_panel', 'PIN del panel', { inputmode: 'numeric', help: 'De 4 a 8 números.' })}</div>
+      <div class="ajbox"><h4>PIN de administrador (opcional)</h4><p>Si lo pones, solo quien lo sepa podrá entrar a Ajustes: cambiar precios, comisiones o PINs. Ideal si los barberos usan el panel.</p>
+      ${fld('pin_admin', 'PIN de administrador', { inputmode: 'numeric', ph: 'Vacío = sin PIN extra', help: 'Déjalo vacío para no pedirlo.' })}</div>` + botonGuardar();
+  }
+  h += '</div>';
+  _$('v-ajustes').innerHTML = h;
+  if (sec === 'mensajes') previewMsg();
+}
+
+function insVar(k, v) {
+  var t = _$('f_' + k); if (!t) return;
+  var a = t.selectionStart || t.value.length, b = t.selectionEnd || a;
+  t.value = t.value.slice(0, a) + v + t.value.slice(b); t.focus(); t.selectionStart = t.selectionEnd = a + v.length; previewMsg();
+}
+function previewMsg() {
+  var ej = { nombre: 'Carlos', negocio: S.aj.config.nombre_negocio, fecha: 'mañana sábado 22 de noviembre', hora: '10:30', servicio: 'Corte clásico', barbero: (S.info.barberos[0] || {}).nombre || 'Luis', link: S.aj.config.link_reservas, codigo: '4821', dias: '21' };
+  ['msg_recordatorio', 'msg_regreso', 'msg_confirmacion'].forEach(function (k) {
+    var t = _$('f_' + k), p = _$('pv_' + k); if (!t || !p) return;
+    p.textContent = t.value.replace(/\{(\w+)\}/g, function (m, x) { return ej[x] !== undefined ? ej[x] : m; });
+  });
+}
+
+async function guardarAjustes() {
+  var cambios = {};
+  document.querySelectorAll('#ajForm [data-k]').forEach(function (el) {
+    cambios[el.dataset.k] = el.dataset.sw ? (el.checked ? 'SI' : 'NO') : el.value;
+  });
+  var db = _$('diasBox');
+  if (db) cambios.dias_laborables = Array.prototype.map.call(db.querySelectorAll('.chip.on'), function (x) { return x.dataset.d; }).join(',');
+  try { await run('panelGuardarConfig', S.adminPin || '', cambios); } catch (e) { return; }
+  if (cambios.pin_panel && cambios.pin_panel !== S.pin) { S.pin = cambios.pin_panel; store('pin', S.pin); }
+  if (cambios.pin_admin !== undefined) S.adminPin = cambios.pin_admin || null;
+  toast('Cambios guardados ✓');
+  await refrescarInfo();
+  renderAjustes();
+}
+async function refrescarInfo() {
+  try { var info = await call('panelLogin'); S.info = info; _$('bizName').textContent = info.negocio; } catch (e) {}
+}
+
+function editarItem(tabla, id) {
+  var x = id ? S.aj[tabla].find(function (i) { return String(i.id) === String(id); }) : null;
+  x = x || { activo: 'SI', tipo_comision: 'PORCENTAJE' };
+  var act = String(x.activo).toUpperCase() === 'SI';
+  var titulo = { servicios: 'servicio', barberos: 'barbero', ofertas: 'oferta' }[tabla];
+  var f = '';
+  if (tabla === 'servicios') f = `<label class="f"><span>Nombre</span><input class="inp" id="iNombre" value="${esc(x.nombre || '')}" placeholder="Ej: Corte + barba"></label>
+    <label class="f"><span>Descripción (opcional)</span><input class="inp" id="iDesc" value="${esc(x.descripcion || '')}" placeholder="Se ve en la web"></label>
+    <div class="grid2"><label class="f"><span>Precio S/</span><input class="inp" id="iPrecio" type="number" inputmode="decimal" value="${esc(x.precio == null ? '' : x.precio)}"></label>
+    <label class="f"><span>Duración</span><select class="inp" id="iDur">${[15, 20, 30, 40, 45, 60, 75, 90, 120].map(function (m) { return `<option value="${m}" ${Number(x.duracion_min || 30) === m ? 'selected' : ''}>${m} min</option>`; }).join('')}</select></label></div>`;
+  if (tabla === 'barberos') {
+    var fijo = String(x.tipo_comision).toUpperCase() === 'FIJO';
+    f = `<label class="f"><span>Nombre</span><input class="inp" id="iNombre" value="${esc(x.nombre || '')}" placeholder="Ej: Luis"></label>
+    <label class="f"><span>Especialidad (opcional)</span><input class="inp" id="iEsp" value="${esc(x.especialidad || '')}" placeholder="Ej: Fades y diseños"></label>
+    <label class="f"><span>Celular (opcional)</span><input class="inp" id="iTel" inputmode="tel" value="${esc(String(x.telefono || '').replace(/^51/, ''))}" placeholder="987654321"></label>
+    <label class="f"><span>¿Cómo gana?</span><div class="seg" style="margin:0"><button id="cPct" class="${fijo ? '' : 'on'}" onclick="tipoCom(false)">% del servicio</button><button id="cFijo" class="${fijo ? 'on' : ''}" onclick="tipoCom(true)">Monto fijo</button></div></label>
+    <label class="f"><span id="iValLbl">${fijo ? 'Monto por servicio S/' : 'Porcentaje %'}</span><input class="inp" id="iVal" type="number" inputmode="decimal" value="${esc(x.valor_comision == null ? '' : x.valor_comision)}"></label>
+    <label class="f"><span>Link de foto (opcional)</span><input class="inp" id="iFoto" value="${esc(x.foto_url || '')}" placeholder="https://…"></label>`;
+    S.tipoFijo = fijo;
+  }
+  if (tabla === 'ofertas') f = `<label class="f"><span>Título</span><input class="inp" id="iNombre" value="${esc(x.titulo || '')}" placeholder="Ej: Martes de barba"></label>
+    <label class="f"><span>Descripción</span><input class="inp" id="iDesc" value="${esc(x.descripcion || '')}" placeholder="Ej: Perfilado a mitad de precio"></label>
+    <label class="f"><span>Precio o texto destacado</span><input class="inp" id="iPrecioTxt" value="${esc(x.precio_texto || '')}" placeholder="Ej: S/ 10 o -20%"></label>`;
+  modal(`<div class="mhead"><h3>${id ? 'Editar' : 'Nuevo'} ${titulo}</h3><button class="btn ghost" onclick="closeModal()">✕</button></div>${f}
+    <div class="tog" style="border:0;margin-bottom:10px"><div><b>${tabla === 'ofertas' ? 'Visible en la web' : 'Activo'}</b><span>${tabla === 'barberos' ? 'Si lo desactivas ya no aparece para reservar' : tabla === 'servicios' ? 'Si lo desactivas ya no aparece en la web ni al cobrar' : 'Ocúltala sin borrarla'}</span></div><label class="sw"><input type="checkbox" id="iAct" ${act ? 'checked' : ''}><i></i></label></div>
+    <button class="btn ok block" onclick="guardarItem('${tabla}','${esc(x.id || '')}')">Guardar</button>`);
+}
+function tipoCom(fijo) { S.tipoFijo = fijo; _$('cPct').classList.toggle('on', !fijo); _$('cFijo').classList.toggle('on', fijo); _$('iValLbl').textContent = fijo ? 'Monto por servicio S/' : 'Porcentaje %'; }
+async function guardarItem(tabla, id) {
+  var it = { id: id || '', activo: _$('iAct').checked ? 'SI' : 'NO' };
+  if (tabla === 'servicios') Object.assign(it, { nombre: _$('iNombre').value, descripcion: _$('iDesc').value, precio: _$('iPrecio').value, duracion_min: _$('iDur').value });
+  if (tabla === 'barberos') Object.assign(it, { nombre: _$('iNombre').value, especialidad: _$('iEsp').value, telefono: _$('iTel').value, tipo_comision: S.tipoFijo ? 'FIJO' : 'PORCENTAJE', valor_comision: _$('iVal').value, foto_url: _$('iFoto').value });
+  if (tabla === 'ofertas') Object.assign(it, { titulo: _$('iNombre').value, descripcion: _$('iDesc').value, precio_texto: _$('iPrecioTxt').value });
+  try { await run('panelGuardarItem', S.adminPin || '', tabla, it); } catch (e) { return; }
+  closeModal(); toast('Guardado ✓');
+  await refrescarInfo();
+  renderAjustes();
+}
+
+/* ---------- inicio ---------- */
+(function () { const p = load('pin'); if (p) login(p); })();
+</script>
+</body>
+</html>
