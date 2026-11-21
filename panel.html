@@ -221,7 +221,7 @@ window.onerror = function (msg, src, line, col) {
     <p>Ingresa tu PIN para continuar</p>
     <input id="pin" class="pin-input" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••">
     <button class="btn acc block" style="margin-top:14px" onclick="login()">Entrar</button>
- <p style="color:#5f584f;font-size:11px;margin-top:22px">v1.6 · <span id="canal"></span></p>
+ <p style="color:#5f584f;font-size:11px;margin-top:22px">v1.7 · <span id="canal"></span></p>
     <p id="loginErr" style="color:#ff9b8f;font-weight:700;font-size:14px;margin-top:14px;line-height:1.45"></p>
   </div>
 </section>
@@ -273,9 +273,9 @@ var _$ = (id) => document.getElementById(id);
 var esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 var soles = (n) => 'S/ ' + (Number(n) || 0).toFixed(2).replace(/\.00$/, '');
 function loading(on) { _$('loading').classList.toggle('hidden', !on); }
-function toast(msg, err) {
+function toast(msg, err, ms) {
   const t = document.createElement('div'); t.className = 'toast' + (err ? ' err' : ''); t.textContent = msg;
-  document.body.appendChild(t); setTimeout(() => t.remove(), err ? 4200 : 2600);
+  document.body.appendChild(t); setTimeout(() => t.remove(), ms || (err ? 4200 : 2600));
 }
 /* URL de la Web App: Google la pone sola cuando el panel se abre desde …/exec?p=panel.
    Si subes este archivo a GitHub Pages como panel aparte, pega aquí la URL /exec. */
@@ -367,6 +367,7 @@ _$('pin').addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); }
 
 /* ---------- navegación ---------- */
 function go(v) {
+  if (S.view === 'ajustes' && v !== 'ajustes' && !ajSalirOk()) return;
   S.view = v;
   document.querySelectorAll('nav.tabs button').forEach((b) => b.classList.toggle('on', b.dataset.v === v));
   ['hoy', 'avisos', 'caja', 'clientes', 'ajustes'].forEach((x) => _$('v-' + x).classList.toggle('hidden', x !== v));
@@ -757,7 +758,13 @@ function pedirAdmin(err) {
     <button class="btn pri block" onclick="S.adminPin=_$('admPin').value.trim();renderAjustes()">Entrar a Ajustes</button></div>`;
   setTimeout(function () { var i = _$('admPin'); if (i) i.focus(); }, 50);
 }
-function ajSec(k) { S.ajSec = k; pintarAjustes(); window.scrollTo(0, 0); }
+// Avisa si hay cambios sin guardar en Ajustes antes de salir de la sección (antes se perdían sin aviso)
+function ajSalirOk() {
+  if (!S.ajDirty) return true;
+  if (!confirm('Tienes cambios SIN GUARDAR en esta sección.\n\nToca "Cancelar" para volver y tocar "Guardar cambios".\nToca "Aceptar" para salir y perderlos.')) return false;
+  S.ajDirty = false; return true;
+}
+function ajSec(k) { if (!ajSalirOk()) return; S.ajSec = k; pintarAjustes(); window.scrollTo(0, 0); }
 function fld(k, label, opts) {
   opts = opts || {};
   var v = S.aj.config[k] == null ? '' : S.aj.config[k];
@@ -853,6 +860,11 @@ function pintarAjustes() {
   }
   h += '</div>';
   _$('v-ajustes').innerHTML = h;
+  S.ajDirty = false;
+  var form = _$('ajForm');
+  form.addEventListener('input', function () { S.ajDirty = true; });
+  form.addEventListener('change', function () { S.ajDirty = true; });
+  var db = _$('diasBox'); if (db) db.addEventListener('click', function () { S.ajDirty = true; });
   if (sec === 'mensajes') previewMsg();
 }
 
@@ -879,9 +891,12 @@ async function guardarAjustes() {
   try { await run('panelGuardarConfig', S.adminPin || '', cambios); } catch (e) { return; }
   if (cambios.pin_panel && cambios.pin_panel !== S.pin) { S.pin = cambios.pin_panel; store('pin', S.pin); }
   if (cambios.pin_admin !== undefined) S.adminPin = cambios.pin_admin || null;
-  toast('Cambios guardados ✓');
+  S.ajDirty = false;
   await refrescarInfo();
-  renderAjustes();
+  await renderAjustes();
+  toast('✓ Cambios guardados', false, 4000);
+  var sb = document.querySelector('.savebar');
+  if (sb) sb.insertAdjacentHTML('afterbegin', '<div style="color:#2e7d32;font-weight:700;text-align:center;margin-bottom:8px">✓ Guardado. Ya se ve en la web.</div>');
 }
 async function refrescarInfo() {
   try { var info = await call('panelLogin'); S.info = info; _$('bizName').textContent = info.negocio; } catch (e) {}
